@@ -1,0 +1,6 @@
+/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles/Platypus.dir
+/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles/edit_cache.dir
+/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles/rebuild_cache.dir
+/home/naneless/Documents/EngPrac/Platypus/Build/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir
+/home/naneless/Documents/EngPrac/Platypus/Build/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
+/home/naneless/Documents/EngPrac/Platypus/Build/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir
