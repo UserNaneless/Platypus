@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -31,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define wait HAL_Delay
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,6 +62,28 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+void Led_Enable() {
+    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_SET);
+}
+
+void Led_Disable() {
+    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_RESET);
+}
+
+void Led_Dot() {
+    Led_Enable();
+    wait(500);
+    Led_Disable();
+    wait(1000);
+}
+
+void Led_Dash(){
+    Led_Enable();
+    wait(1000);
+    Led_Disable();
+    wait(1000);
+}
 /* USER CODE END 0 */
 
 /**
@@ -102,7 +126,20 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    Led_Dot();
+    Led_Dash();
+    Led_Dash();
+    Led_Dot();
 
+    Led_Dash();
+    Led_Dash();
+    Led_Dash();
+
+    Led_Dot();
+    Led_Dash();
+    Led_Dash();
+    Led_Dot();
+    
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -231,15 +268,27 @@ static void MX_USB_OTG_FS_PCD_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
 
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : LED_INDICATOR_Pin */
+  GPIO_InitStruct.Pin = LED_INDICATOR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_INDICATOR_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
