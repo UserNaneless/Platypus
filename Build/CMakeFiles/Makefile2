@@ -65,21 +65,44 @@ CMAKE_BINARY_DIR = /home/naneless/Documents/EngPrac/Platypus/Build
 # The main recursive "all" target.
 all: CMakeFiles/Platypus.dir/all
 all: cmake/stm32cubemx/all
+all: Core/Lib/Debug/all
 .PHONY : all
 
 # The main recursive "codegen" target.
 codegen: CMakeFiles/Platypus.dir/codegen
 codegen: cmake/stm32cubemx/codegen
+codegen: Core/Lib/Debug/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
 preinstall: cmake/stm32cubemx/preinstall
+preinstall: Core/Lib/Debug/preinstall
 .PHONY : preinstall
 
 # The main recursive "clean" target.
 clean: CMakeFiles/Platypus.dir/clean
 clean: cmake/stm32cubemx/clean
+clean: Core/Lib/Debug/clean
 .PHONY : clean
+
+#=============================================================================
+# Directory level rules for directory Core/Lib/Debug
+
+# Recursive "all" directory target.
+Core/Lib/Debug/all: Core/Lib/Debug/CMakeFiles/debug_options.dir/all
+.PHONY : Core/Lib/Debug/all
+
+# Recursive "codegen" directory target.
+Core/Lib/Debug/codegen: Core/Lib/Debug/CMakeFiles/debug_options.dir/codegen
+.PHONY : Core/Lib/Debug/codegen
+
+# Recursive "preinstall" directory target.
+Core/Lib/Debug/preinstall:
+.PHONY : Core/Lib/Debug/preinstall
+
+# Recursive "clean" directory target.
+Core/Lib/Debug/clean: Core/Lib/Debug/CMakeFiles/debug_options.dir/clean
+.PHONY : Core/Lib/Debug/clean
 
 #=============================================================================
 # Directory level rules for directory cmake/stm32cubemx
@@ -105,6 +128,7 @@ cmake/stm32cubemx/clean: cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/clean
 
 # All Build rule for target.
 CMakeFiles/Platypus.dir/all: cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/all
+CMakeFiles/Platypus.dir/all: Core/Lib/Debug/CMakeFiles/debug_options.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target Platypus"
@@ -112,7 +136,7 @@ CMakeFiles/Platypus.dir/all: cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/Platypus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles 27
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles 30
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Platypus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles 0
 .PHONY : CMakeFiles/Platypus.dir/rule
@@ -163,6 +187,38 @@ cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/codegen:
 cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/clean:
 	$(MAKE) $(MAKESILENT) -f cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/build.make cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/clean
 .PHONY : cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/clean
+
+#=============================================================================
+# Target rules for target Core/Lib/Debug/CMakeFiles/debug_options.dir
+
+# All Build rule for target.
+Core/Lib/Debug/CMakeFiles/debug_options.dir/all:
+	$(MAKE) $(MAKESILENT) -f Core/Lib/Debug/CMakeFiles/debug_options.dir/build.make Core/Lib/Debug/CMakeFiles/debug_options.dir/depend
+	$(MAKE) $(MAKESILENT) -f Core/Lib/Debug/CMakeFiles/debug_options.dir/build.make Core/Lib/Debug/CMakeFiles/debug_options.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles --progress-num=28,29,30 "Built target debug_options"
+.PHONY : Core/Lib/Debug/CMakeFiles/debug_options.dir/all
+
+# Build rule for subdir invocation for target.
+Core/Lib/Debug/CMakeFiles/debug_options.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles 3
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Core/Lib/Debug/CMakeFiles/debug_options.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles 0
+.PHONY : Core/Lib/Debug/CMakeFiles/debug_options.dir/rule
+
+# Convenience name for target.
+debug_options: Core/Lib/Debug/CMakeFiles/debug_options.dir/rule
+.PHONY : debug_options
+
+# codegen rule for target.
+Core/Lib/Debug/CMakeFiles/debug_options.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f Core/Lib/Debug/CMakeFiles/debug_options.dir/build.make Core/Lib/Debug/CMakeFiles/debug_options.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles --progress-num=28,29,30 "Finished codegen for target debug_options"
+.PHONY : Core/Lib/Debug/CMakeFiles/debug_options.dir/codegen
+
+# clean rule for target.
+Core/Lib/Debug/CMakeFiles/debug_options.dir/clean:
+	$(MAKE) $(MAKESILENT) -f Core/Lib/Debug/CMakeFiles/debug_options.dir/build.make Core/Lib/Debug/CMakeFiles/debug_options.dir/clean
+.PHONY : Core/Lib/Debug/CMakeFiles/debug_options.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

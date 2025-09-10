@@ -72,19 +72,19 @@ include CMakeFiles/Platypus.dir/flags.make
 CMakeFiles/Platypus.dir/codegen:
 .PHONY : CMakeFiles/Platypus.dir/codegen
 
-CMakeFiles/Platypus.dir/Core/Src/main.c.obj: CMakeFiles/Platypus.dir/flags.make
-CMakeFiles/Platypus.dir/Core/Src/main.c.obj: /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.c
-CMakeFiles/Platypus.dir/Core/Src/main.c.obj: CMakeFiles/Platypus.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/Platypus.dir/Core/Src/main.c.obj"
-	/usr/bin/arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/Platypus.dir/Core/Src/main.c.obj -MF CMakeFiles/Platypus.dir/Core/Src/main.c.obj.d -o CMakeFiles/Platypus.dir/Core/Src/main.c.obj -c /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.c
+CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj: CMakeFiles/Platypus.dir/flags.make
+CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj: /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.cpp
+CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj: CMakeFiles/Platypus.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj"
+	/usr/bin/arm-none-eabi-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj -MF CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj.d -o CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj -c /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.cpp
 
-CMakeFiles/Platypus.dir/Core/Src/main.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/Platypus.dir/Core/Src/main.c.i"
-	/usr/bin/arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.c > CMakeFiles/Platypus.dir/Core/Src/main.c.i
+CMakeFiles/Platypus.dir/Core/Src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Platypus.dir/Core/Src/main.cpp.i"
+	/usr/bin/arm-none-eabi-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.cpp > CMakeFiles/Platypus.dir/Core/Src/main.cpp.i
 
-CMakeFiles/Platypus.dir/Core/Src/main.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/Platypus.dir/Core/Src/main.c.s"
-	/usr/bin/arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.c -o CMakeFiles/Platypus.dir/Core/Src/main.c.s
+CMakeFiles/Platypus.dir/Core/Src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Platypus.dir/Core/Src/main.cpp.s"
+	/usr/bin/arm-none-eabi-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/naneless/Documents/EngPrac/Platypus/Core/Src/main.cpp -o CMakeFiles/Platypus.dir/Core/Src/main.cpp.s
 
 CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_it.c.obj: CMakeFiles/Platypus.dir/flags.make
 CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_it.c.obj: /home/naneless/Documents/EngPrac/Platypus/Core/Src/stm32f4xx_it.c
@@ -157,7 +157,7 @@ CMakeFiles/Platypus.dir/startup_stm32f405xx.s.s: cmake_force
 
 # Object files for target Platypus
 Platypus_OBJECTS = \
-"CMakeFiles/Platypus.dir/Core/Src/main.c.obj" \
+"CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj" \
 "CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_it.c.obj" \
 "CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_hal_msp.c.obj" \
 "CMakeFiles/Platypus.dir/Core/Src/sysmem.c.obj" \
@@ -187,7 +187,7 @@ Platypus_EXTERNAL_OBJECTS = \
 "/home/naneless/Documents/EngPrac/Platypus/Build/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c.obj" \
 "/home/naneless/Documents/EngPrac/Platypus/Build/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c.obj"
 
-Platypus.elf: CMakeFiles/Platypus.dir/Core/Src/main.c.obj
+Platypus.elf: CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj
 Platypus.elf: CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_it.c.obj
 Platypus.elf: CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_hal_msp.c.obj
 Platypus.elf: CMakeFiles/Platypus.dir/Core/Src/sysmem.c.obj
@@ -214,8 +214,9 @@ Platypus.elf: cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32
 Platypus.elf: cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c.obj
 Platypus.elf: cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c.obj
 Platypus.elf: CMakeFiles/Platypus.dir/build.make
+Platypus.elf: Core/Lib/Debug/libdebug_options.a
 Platypus.elf: CMakeFiles/Platypus.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking C executable Platypus.elf"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/naneless/Documents/EngPrac/Platypus/Build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable Platypus.elf"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Platypus.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

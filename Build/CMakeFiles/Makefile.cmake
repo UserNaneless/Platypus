@@ -12,6 +12,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.31.6/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeSystem.cmake"
   "/home/naneless/Documents/EngPrac/Platypus/CMakeLists.txt"
+  "/home/naneless/Documents/EngPrac/Platypus/Core/Lib/Debug/CMakeLists.txt"
   "/home/naneless/Documents/EngPrac/Platypus/cmake/gcc-arm-none-eabi.cmake"
   "/home/naneless/Documents/EngPrac/Platypus/cmake/stm32cubemx/CMakeLists.txt"
   "/usr/share/cmake-3.31/Modules/CMakeASMInformation.cmake"
@@ -45,10 +46,12 @@ set(CMAKE_MAKEFILE_OUTPUTS
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "cmake/stm32cubemx/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "Core/Lib/Debug/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/Platypus.dir/DependInfo.cmake"
   "cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/DependInfo.cmake"
+  "Core/Lib/Debug/CMakeFiles/debug_options.dir/DependInfo.cmake"
   )

@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "debug_terminal.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

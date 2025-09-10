@@ -142,29 +142,42 @@ STM32_Drivers/fast:
 	$(MAKE) $(MAKESILENT) -f cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/build.make cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/build
 .PHONY : STM32_Drivers/fast
 
-Core/Src/main.obj: Core/Src/main.c.obj
+#=============================================================================
+# Target rules for targets named debug_options
+
+# Build rule for target.
+debug_options: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 debug_options
+.PHONY : debug_options
+
+# fast build rule for target.
+debug_options/fast:
+	$(MAKE) $(MAKESILENT) -f Core/Lib/Debug/CMakeFiles/debug_options.dir/build.make Core/Lib/Debug/CMakeFiles/debug_options.dir/build
+.PHONY : debug_options/fast
+
+Core/Src/main.obj: Core/Src/main.cpp.obj
 .PHONY : Core/Src/main.obj
 
 # target to build an object file
-Core/Src/main.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/Core/Src/main.c.obj
-.PHONY : Core/Src/main.c.obj
+Core/Src/main.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj
+.PHONY : Core/Src/main.cpp.obj
 
-Core/Src/main.i: Core/Src/main.c.i
+Core/Src/main.i: Core/Src/main.cpp.i
 .PHONY : Core/Src/main.i
 
 # target to preprocess a source file
-Core/Src/main.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/Core/Src/main.c.i
-.PHONY : Core/Src/main.c.i
+Core/Src/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/Core/Src/main.cpp.i
+.PHONY : Core/Src/main.cpp.i
 
-Core/Src/main.s: Core/Src/main.c.s
+Core/Src/main.s: Core/Src/main.cpp.s
 .PHONY : Core/Src/main.s
 
 # target to generate assembly for a file
-Core/Src/main.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/Core/Src/main.c.s
-.PHONY : Core/Src/main.c.s
+Core/Src/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Platypus.dir/build.make CMakeFiles/Platypus.dir/Core/Src/main.cpp.s
+.PHONY : Core/Src/main.cpp.s
 
 Core/Src/stm32f4xx_hal_msp.obj: Core/Src/stm32f4xx_hal_msp.c.obj
 .PHONY : Core/Src/stm32f4xx_hal_msp.obj
@@ -280,6 +293,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... Platypus"
 	@echo "... STM32_Drivers"
+	@echo "... debug_options"
 	@echo "... Core/Src/main.obj"
 	@echo "... Core/Src/main.i"
 	@echo "... Core/Src/main.s"

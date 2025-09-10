@@ -26,15 +26,16 @@ set(CMAKE_ASM_TARGET_INCLUDE_PATH
   "/home/naneless/Documents/EngPrac/Platypus/cmake/stm32cubemx/../../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"
   "/home/naneless/Documents/EngPrac/Platypus/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F4xx/Include"
   "/home/naneless/Documents/EngPrac/Platypus/cmake/stm32cubemx/../../Drivers/CMSIS/Include"
+  "/home/naneless/Documents/EngPrac/Platypus/Core/Lib/Debug/include"
   )
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/naneless/Documents/EngPrac/Platypus/Core/Src/main.c" "CMakeFiles/Platypus.dir/Core/Src/main.c.obj" "gcc" "CMakeFiles/Platypus.dir/Core/Src/main.c.obj.d"
   "/home/naneless/Documents/EngPrac/Platypus/Core/Src/stm32f4xx_hal_msp.c" "CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_hal_msp.c.obj" "gcc" "CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_hal_msp.c.obj.d"
   "/home/naneless/Documents/EngPrac/Platypus/Core/Src/stm32f4xx_it.c" "CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_it.c.obj" "gcc" "CMakeFiles/Platypus.dir/Core/Src/stm32f4xx_it.c.obj.d"
   "/home/naneless/Documents/EngPrac/Platypus/Core/Src/syscalls.c" "CMakeFiles/Platypus.dir/Core/Src/syscalls.c.obj" "gcc" "CMakeFiles/Platypus.dir/Core/Src/syscalls.c.obj.d"
   "/home/naneless/Documents/EngPrac/Platypus/Core/Src/sysmem.c" "CMakeFiles/Platypus.dir/Core/Src/sysmem.c.obj" "gcc" "CMakeFiles/Platypus.dir/Core/Src/sysmem.c.obj.d"
+  "/home/naneless/Documents/EngPrac/Platypus/Core/Src/main.cpp" "CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj" "gcc" "CMakeFiles/Platypus.dir/Core/Src/main.cpp.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

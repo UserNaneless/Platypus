@@ -1,0 +1,8 @@
+{
+    "cortex-debug.gdbPath": "gdb-multiarch",
+    "cortex-debug.gdbTarget": "localhost:2331",
+    "cortex-debug.interface": "swd",
+    "cortex-debug.serverType": "jlink",
+    "cortex-debug.serialNumber": "",
+    // "cortex-debug.showDevDebugOutput": "raw"
+}

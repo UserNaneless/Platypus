@@ -1,0 +1,139 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cortex-debug",
+            "request": "launch",
+            "name": "debug (j-link) launch",
+            // "cwd": "${workspaceroot}",
+            "executable": "build/Debug/Platypus.elf",
+            "servertype": "external",
+            "device": "stm32f405rg",
+            "interface": "swd",
+            "gdbPath": "gdb-multiarch",
+            "gdbTarget": "localhost:2331",
+            // "showdevdebugoutput": "raw",
+            "serialnumber": "",
+            "swoconfig": {
+                "enabled": true,
+                "cpufrequency": 168000000,
+                "swofrequency": 4000000,
+                "source": "probe",
+                "decoders": [
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 0,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 1,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 2,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 3,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 4,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 5,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 6,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 7,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 8,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 9,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 10,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 11,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 12,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 13,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 14,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    },
+                    {
+                        "type": "console",
+                        "label": "itm",
+                        "port": 15,
+                        "showonstartup": true,
+                        "encoding": "utf8"
+                    }
+                ]
+            }
+        },
+    ]
+}
