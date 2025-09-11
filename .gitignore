@@ -2,6 +2,7 @@ build/*
 Build/*
 .vscode
 .cache
-!build/**/*.elf
-!Build/**/*.elf
-!Build/compile_commands.json
+!Build/Debug/*.elf
+!Build/Release/*.elf
+!Build/Debug/compile_commands.json
+!Build/Release/compile_commands.json
