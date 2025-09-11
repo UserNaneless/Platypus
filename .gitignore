@@ -4,4 +4,4 @@ Build/*
 .cache
 !build/**/*.elf
 !Build/**/*.elf
-!Build/compile_commands.json
+!Build/**/compile_commands.json
