@@ -11,7 +11,7 @@
             "device": "stm32f405rg",
             "interface": "swd",
             "gdbPath": "gdb-multiarch",
-            "gdbTarget": "localhost:2331",
+            "gdbTarget": "localhost:3333",
             // "showdevdebugoutput": "raw",
             "serialnumber": "",
             "swoconfig": {

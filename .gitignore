@@ -1,0 +1,6 @@
+build/*
+Build/*
+.vscode
+!build/**/*.elf
+!Build/**/*.elf
+!Build/compile_commands.json

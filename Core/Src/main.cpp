@@ -125,20 +125,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // Led_Dot();
+    // Led_Dash();
+    // Led_Dash();
+    // Led_Dot();
+
+    // Led_Dash();
+    // Led_Dash();
+    // Led_Dash();
+
+    // Led_Dot();
+    // Led_Dash();
+    // Led_Dash();
+    // Led_Dot();
+
     /* USER CODE END WHILE */
-    Led_Dot();
-    Led_Dash();
-    Led_Dash();
-    Led_Dot();
-
-    Led_Dash();
-    Led_Dash();
-    Led_Dash();
-
-    Led_Dot();
-    Led_Dash();
-    Led_Dash();
-    Led_Dot();
     
     /* USER CODE BEGIN 3 */
   }
@@ -209,16 +210,17 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
+  hsd.Init.ClockDiv = 6;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   if (HAL_SD_Init(&hsd) != HAL_OK)
   {
-    Error_Handler();
+    // Error_Handler();
   }
   if (HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B) != HAL_OK)
   {
-    Error_Handler();
+    // Error_Handler();
   }
   /* USER CODE BEGIN SDIO_Init 2 */
 
