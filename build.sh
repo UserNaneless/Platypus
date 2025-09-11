@@ -1,11 +1,8 @@
 #!/bin/bash
 
-if [ -d "Build" ]; then
-    rm -r Build
-fi
-
 BUILD_TYPE=Debug
 BUILD=1
+REBUILD=0
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -21,6 +18,10 @@ while [[ $# -gt 0 ]]; do
             BUILD=0;
             shift
             ;;
+        --rebuild)
+            REBUILD=1;
+            shift
+            ;;
         *)
             echo "Unknown parameter passed: $1"
             exit 1
@@ -28,7 +29,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+
 BUILD_DIR=Build/$BUILD_TYPE
+
+if [ $REBUILD -eq 1 ]; then
+    make -C $BUILD_DIR
+    exit 0
+fi
 
 mkdir -p $BUILD_DIR
 

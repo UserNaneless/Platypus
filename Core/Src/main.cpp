@@ -18,12 +18,15 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "bsp_driver_sd.h"
+#include "diskio.h"
+#include "ff.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "debug_terminal.hpp"
+#include "fatfs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +37,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define wait HAL_Delay
+#define SD_INIT_ERROR 0
+#define DISK_INIT_ERROR 1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -83,6 +88,36 @@ void Led_Dash() {
     Led_Disable();
     wait(1000);
 }
+
+void Led_OK_Flash() {
+    Led_Enable();
+    wait(100);
+    Led_Disable();
+    wait(100);
+    Led_Enable();
+    wait(100);
+    Led_Disable();
+    wait(100);
+}
+
+
+
+int SDCard_Test() {
+    FATFS FatFs;
+
+    // FRESULT FR_Status = f_mount(&FatFs, "0:", 1);
+    FRESULT FR_Status = FR_OK;
+
+    if(BSP_SD_Init() != MSD_OK) {
+        return SD_INIT_ERROR;        
+    } 
+
+    if(disk_initialize(0) != RES_OK) {
+        return DISK_INIT_ERROR;
+    }
+
+    return 3;
+}
 /* USER CODE END 0 */
 
 /**
@@ -117,12 +152,17 @@ int main(void) {
     MX_SDIO_SD_Init();
     MX_USB_OTG_FS_PCD_Init();
     /* USER CODE BEGIN 2 */
+    int sdCard_OK = SDCard_Test();
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+        // else {
+        //     Led_Enable();
+        // }
+        // Led_Dash();
         // Led_Dot();
         // Led_Dash();
         // Led_Dash();
