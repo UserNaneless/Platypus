@@ -39,6 +39,7 @@
 #define wait HAL_Delay
 #define SD_INIT_ERROR 0
 #define DISK_INIT_ERROR 1
+#define MOUNT_ERROR 2
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,11 +69,11 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 /* USER CODE BEGIN 0 */
 
 void Led_Enable() {
-    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_RESET);
 }
 
 void Led_Disable() {
-    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_SET);
 }
 
 void Led_Dot() {
@@ -89,32 +90,45 @@ void Led_Dash() {
     wait(1000);
 }
 
-void Led_OK_Flash() {
-    Led_Enable();
-    wait(100);
-    Led_Disable();
-    wait(100);
-    Led_Enable();
-    wait(100);
-    Led_Disable();
-    wait(100);
+void Led_OK_Flash(int count) {
+    int i = count;
+    while (i--) {
+        Led_Enable();
+        wait(300);
+        Led_Disable();
+        wait(300);
+    }
 }
-
-
 
 int SDCard_Test() {
     FATFS FatFs;
 
-    // FRESULT FR_Status = f_mount(&FatFs, "0:", 1);
     FRESULT FR_Status = FR_OK;
 
-    if(BSP_SD_Init() != MSD_OK) {
-        return SD_INIT_ERROR;        
-    } 
+    if (BSP_SD_Init() != MSD_OK) {
+        return SD_INIT_ERROR;
+    }
 
-    if(disk_initialize(0) != RES_OK) {
+    if (disk_initialize(0) != RES_OK) {
         return DISK_INIT_ERROR;
     }
+
+    FR_Status = f_mount(&FatFs, "0:", 1);
+
+    if (FR_Status != FR_OK) {
+        return DISK_INIT_ERROR;
+    }
+
+    FIL fil;
+    FR_Status = f_open(&fil, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
+
+    if (FR_Status != FR_OK) {
+        return MOUNT_ERROR;
+    }
+
+    f_puts("Hello from Platypus!", &fil);
+    f_close(&fil);
+    f_mount(NULL, "0:", 0);
 
     return 3;
 }
@@ -152,16 +166,17 @@ int main(void) {
     MX_SDIO_SD_Init();
     MX_USB_OTG_FS_PCD_Init();
     /* USER CODE BEGIN 2 */
+    MX_FATFS_Init();
+
+    Led_Disable();
     int sdCard_OK = SDCard_Test();
+    Led_OK_Flash(sdCard_OK);
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-        // else {
-        //     Led_Enable();
-        // }
         // Led_Dash();
         // Led_Dot();
         // Led_Dash();
