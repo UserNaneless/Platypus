@@ -22,6 +22,7 @@
  */
 /* USER CODE END Header */
 
+#include "main.h"
 #ifdef OLD_API
 /* kept to avoid issue when migrating old projects. */
 /* USER CODE BEGIN 0 */
@@ -304,7 +305,9 @@ __weak uint8_t BSP_SD_IsDetected(void)
   __IO uint8_t status = SD_PRESENT;
 
   /* USER CODE BEGIN 1 */
-  HAL_GPIO_ReadPin()
+  if(!HAL_GPIO_ReadPin(SD_PRESENCE_GPIO_Port, SD_PRESENCE_Pin)) {
+    status = SD_NOT_PRESENT;
+  }
   /* user code can be inserted here */
   /* USER CODE END 1 */
 
