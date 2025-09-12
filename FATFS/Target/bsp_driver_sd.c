@@ -304,6 +304,7 @@ __weak uint8_t BSP_SD_IsDetected(void)
   __IO uint8_t status = SD_PRESENT;
 
   /* USER CODE BEGIN 1 */
+  HAL_GPIO_ReadPin()
   /* user code can be inserted here */
   /* USER CODE END 1 */
 

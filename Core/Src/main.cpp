@@ -19,14 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "bsp_driver_sd.h"
-#include "diskio.h"
-#include "ff.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_gpio.h"
+#include "fatfs.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "debug_terminal.hpp"
 #include "fatfs.h"
+#include "stm32f4xx_hal_gpio.h"
+#include <cstdint>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,38 +66,66 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+typedef struct LED_Color_Data {
+        GPIO_TypeDef *GPIO_Port;
+        uint16_t GPIO_Pin;
+} LED_Color_Data;
 
-void Led_Enable() {
-    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_RESET);
-}
+typedef struct LED_RGB_Data {
+        LED_Color_Data r;
+        LED_Color_Data g;
+        LED_Color_Data b;
+} LED_RGB_Data;
 
-void Led_Disable() {
-    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_SET);
-}
+enum Color {
+    WHITE = 0b111,
+    BLUE = 0b001,
+    GREEN = 0b010,
+    RED = 0b100,
+    CYAN = 0b011,
+    MAGENTA = 0b101,
+    YELLOW = 0b110,
+    OFF = 0b000
+};
 
-void Led_Dot() {
-    Led_Enable();
-    wait(500);
-    Led_Disable();
-    wait(1000);
-}
+class LED {
+    private:
+        LED_RGB_Data led;
+        Color ledRGB = Color::OFF;
 
-void Led_Dash() {
-    Led_Enable();
-    wait(1000);
-    Led_Disable();
-    wait(1000);
-}
+        void setPin(GPIO_TypeDef *port, uint16_t pin, bool state) {
+            if (state)
+                HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
+            else
+                HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
+        }
 
-void Led_OK_Flash(int count) {
-    int i = count;
-    while (i--) {
-        Led_Enable();
-        wait(300);
-        Led_Disable();
-        wait(300);
-    }
-}
+    public:
+        LED(LED_RGB_Data &led) : led(led) {
+        }
+
+        void setColor(Color color) {
+            ledRGB = color;
+            setPin(led.r.GPIO_Port, led.r.GPIO_Pin, (color >> 2) & 1);
+            setPin(led.g.GPIO_Port, led.g.GPIO_Pin, (color >> 1) & 1);
+            setPin(led.b.GPIO_Port, led.b.GPIO_Pin, color & 1);
+        }
+
+        void OK() {
+            setColor(Color::GREEN);
+            wait(300);
+            setColor(Color::OFF);
+            wait(300);
+            setColor(Color::GREEN);
+            wait(300);
+            setColor(Color::OFF);
+            wait(300);
+            setColor(Color::GREEN);
+            wait(300);
+            setColor(Color::OFF);
+        }
+
+};
 
 int SDCard_Test() {
     FATFS FatFs;
@@ -146,8 +173,7 @@ int main(void) {
 
     /* MCU Configuration--------------------------------------------------------*/
 
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick.
-     */
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
 
     /* USER CODE BEGIN Init */
@@ -165,33 +191,37 @@ int main(void) {
     MX_GPIO_Init();
     MX_SDIO_SD_Init();
     MX_USB_OTG_FS_PCD_Init();
-    /* USER CODE BEGIN 2 */
     MX_FATFS_Init();
+    /* USER CODE BEGIN 2 */
 
-    Led_Disable();
     int sdCard_OK = SDCard_Test();
-    Led_OK_Flash(sdCard_OK);
+
+    LED_RGB_Data Led1_RGB = {
+        {
+            .GPIO_Port = LED1_RED_GPIO_Port,
+            .GPIO_Pin = LED1_RED_Pin,
+        },
+        {
+            .GPIO_Port = LED1_GREEN_GPIO_Port,
+            .GPIO_Pin = LED1_GREEN_Pin,
+        },
+        {
+            .GPIO_Port = LED1_BLUE_GPIO_Port,
+            .GPIO_Pin = LED1_BLUE_Pin,
+        },
+    };
+
+    LED Led1(Led1_RGB);
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-        // Led_Dash();
-        // Led_Dot();
-        // Led_Dash();
-        // Led_Dash();
-        // Led_Dot();
-
-        // Led_Dash();
-        // Led_Dash();
-        // Led_Dash();
-
-        // Led_Dot();
-        // Led_Dash();
-        // Led_Dash();
-        // Led_Dot();
-
+        if(BSP_SD_IsDetected() == SD_PRESENT)
+            Led1.OK();
+        else 
+            Led1.setColor(Color::RED);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -229,8 +259,7 @@ void SystemClock_Config(void) {
 
     /** Initializes the CPU, AHB and APB buses clocks
      */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
-                                  RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -259,16 +288,9 @@ static void MX_SDIO_SD_Init(void) {
     hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
     hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
     hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-    hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
-    hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-    hsd.Init.ClockDiv = 6;
     hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
-    if (HAL_SD_Init(&hsd) != HAL_OK) {
-        // Error_Handler();
-    }
-    if (HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B) != HAL_OK) {
-        // Error_Handler();
-    }
+    hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+    hsd.Init.ClockDiv = 0;
     /* USER CODE BEGIN SDIO_Init 2 */
 
     /* USER CODE END SDIO_Init 2 */
@@ -325,14 +347,24 @@ static void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, LED1_RED_Pin | LED1_GREEN_Pin, GPIO_PIN_SET);
 
-    /*Configure GPIO pin : LED_INDICATOR_Pin */
-    GPIO_InitStruct.Pin = LED_INDICATOR_Pin;
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(LED1_BLUE_GPIO_Port, LED1_BLUE_Pin, GPIO_PIN_SET);
+
+    /*Configure GPIO pins : LED1_RED_Pin LED1_GREEN_Pin */
+    GPIO_InitStruct.Pin = LED1_RED_Pin | LED1_GREEN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(LED_INDICATOR_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : LED1_BLUE_Pin */
+    GPIO_InitStruct.Pin = LED1_BLUE_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(LED1_BLUE_GPIO_Port, &GPIO_InitStruct);
 
     /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -370,4 +402,4 @@ void assert_failed(uint8_t *file, uint32_t line) {
        line) */
     /* USER CODE END 6 */
 }
-#endif /* USE_FULL_ASSERT */
+#endif /* USE_FULL_ASSERT1 */
