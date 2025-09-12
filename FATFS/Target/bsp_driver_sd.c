@@ -305,7 +305,7 @@ __weak uint8_t BSP_SD_IsDetected(void)
   __IO uint8_t status = SD_PRESENT;
 
   /* USER CODE BEGIN 1 */
-  if(!HAL_GPIO_ReadPin(SD_PRESENCE_GPIO_Port, SD_PRESENCE_Pin)) {
+  if(HAL_GPIO_ReadPin(SD_PRESENCE_GPIO_Port, SD_PRESENCE_Pin)) {
     status = SD_NOT_PRESENT;
   }
   /* user code can be inserted here */
