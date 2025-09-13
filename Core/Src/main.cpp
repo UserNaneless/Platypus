@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "fatfs.h"
+#include "ff.h"
 #include "stm32f4xx_hal_gpio.h"
 #include <cstdint>
 /* USER CODE END Includes */
@@ -110,53 +111,131 @@ class LED {
             setPin(led.b.GPIO_Port, led.b.GPIO_Pin, color & 1);
         }
 
+        void Off() {
+            setColor(Color::OFF);
+        }
+
         void OK() {
-            setColor(Color::GREEN);
+            setColor(ledRGB);
             wait(300);
-            setColor(Color::OFF);
+            Off();
             wait(300);
-            setColor(Color::GREEN);
+            setColor(ledRGB);
             wait(300);
-            setColor(Color::OFF);
+            Off();
             wait(300);
-            setColor(Color::GREEN);
+            setColor(ledRGB);
             wait(300);
-            setColor(Color::OFF);
+            Off();
+        }
+
+        void OK(Color color) {
+            setColor(color);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(color);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(color);
+            wait(300);
+            Off();
         }
 };
 
-int SDCard_Test() {
-    FATFS FatFs;
+class SD_Card {
+    private:
+        bool inserted = false;
+        bool opened = false;
+        FATFS FatFS{};
+        FIL fil{};
 
-    FRESULT FR_Status = FR_OK;
+    public:
+        SD_Card() {
+            checkInsertion();
+        }
 
-    if (BSP_SD_Init() != MSD_OK) {
-        return SD_INIT_ERROR;
-    }
+        ~SD_Card() {
+            if (opened) {
+                close();
+            }
+            unmount();
+        }
 
-    if (disk_initialize(0) != RES_OK) {
-        return DISK_INIT_ERROR;
-    }
+        bool isInserted() {
+            return inserted;
+        }
 
-    FR_Status = f_mount(&FatFs, "0:", 1);
+        bool checkInsertion() {
+            bool inserted_new = (BSP_SD_IsDetected() == SD_PRESENT);
+            if (inserted_new) {
+                inserted = BIT();
+                if (inserted) {
+                    mount();
+                }
+                return inserted;
+            }
+            inserted = false;
+            return false;
+        }
 
-    if (FR_Status != FR_OK) {
-        return DISK_INIT_ERROR;
-    }
+        bool BIT() {
+            if (BSP_SD_Init() == MSD_OK) {
+                if (disk_initialize(0) == RES_OK) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-    FIL fil;
-    FR_Status = f_open(&fil, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
+        FRESULT mount() {
+            if (!inserted)
+                return FR_DISK_ERR;
+            return f_mount(&FatFS, "0:", 1);
+        }
 
-    if (FR_Status != FR_OK) {
-        return MOUNT_ERROR;
-    }
+        FRESULT unmount() {
+            if (!inserted)
+                return FR_DISK_ERR;
+            return f_mount(NULL, "0:", 0);
+        }
 
-    f_puts("Hello from Platypus!", &fil);
-    f_close(&fil);
-    f_mount(NULL, "0:", 0);
+        bool write_once(char *name, char *buf) {
+            if (!inserted)
+                return false;
+            FIL fil;
+            if (f_open(&fil, name, FA_OPEN_ALWAYS | FA_OPEN_APPEND) == FR_OK) {
+                f_puts(buf, &fil);
+            } else {
+                f_close(&fil);
+                return false;
+            }
+            return true;
+            f_close(&fil);
+        }
 
-    return 3;
-}
+        void open(char *name) {
+            if (!inserted)
+                return;
+            if (f_open(&fil, name, FA_WRITE | FA_CREATE_ALWAYS) == FR_OK) {
+                opened = true;
+            };
+        }
+
+        void write(char *buf) {
+            if (!inserted)
+                return;
+            f_puts(buf, &fil);
+        }
+
+        FRESULT close() {
+            if (!inserted)
+                return FR_DISK_ERR;
+            return f_close(&fil);
+        }
+};
+
 /* USER CODE END 0 */
 
 /**
@@ -192,8 +271,6 @@ int main(void) {
     MX_FATFS_Init();
     /* USER CODE BEGIN 2 */
 
-    int sdCard_OK = SDCard_Test();
-
     LED_RGB_Data Led1_RGB = {
         {
             .GPIO_Port = LED1_RED_GPIO_Port,
@@ -226,17 +303,24 @@ int main(void) {
 
     LED Led1(Led1_RGB);
     LED Led2(Led2_RGB);
+    SD_Card SD;
+
+    SD.checkInsertion();
+    if (SD.isInserted()) {
+        char name[] = "test.txt";
+        char buf[] = "Hello from SD Class";
+        if (SD.write_once(name, buf)) {
+            Led1.OK(Color::GREEN);
+        };
+    }
+
+    bool once = false;
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-        if (BSP_SD_IsDetected() == SD_PRESENT) {
-            Led1.OK();
-            Led2.OK();
-        } else
-            Led1.setColor(Color::RED);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -303,9 +387,10 @@ static void MX_SDIO_SD_Init(void) {
     hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
     hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
     hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-    hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
+    hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
     hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-    hsd.Init.ClockDiv = 0;
+    hsd.Init.ClockDiv = 6;
+    hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
     /* USER CODE BEGIN SDIO_Init 2 */
 
     /* USER CODE END SDIO_Init 2 */
