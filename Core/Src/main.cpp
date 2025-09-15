@@ -172,7 +172,10 @@ class SD_Card {
             if (inserted_new) {
                 inserted = BIT();
                 if (inserted) {
-                    mount();
+                    if (mount() != FR_OK) {
+                        inserted = false;
+                        return false;
+                    }
                 }
                 return inserted;
             }
@@ -191,47 +194,51 @@ class SD_Card {
 
         FRESULT mount() {
             if (!inserted)
-                return FR_DISK_ERR;
+                return FR_NOT_READY;
             return f_mount(&FatFS, "0:", 1);
         }
 
         FRESULT unmount() {
             if (!inserted)
-                return FR_DISK_ERR;
+                return  FR_NOT_READY;
             return f_mount(NULL, "0:", 0);
         }
 
-        bool write_once(char *name, char *buf) {
+        FRESULT write_once(char *name, char *buf, size_t size, BYTE mode = FA_WRITE | FA_CREATE_ALWAYS) {
             if (!inserted)
-                return false;
+                return FR_NOT_READY;
             FIL fil;
-            if (f_open(&fil, name, FA_OPEN_ALWAYS | FA_OPEN_APPEND) == FR_OK) {
-                f_puts(buf, &fil);
-            } else {
-                f_close(&fil);
-                return false;
+            if (f_open(&fil, name, mode) == FR_OK) {
+                UINT bw;
+                if(f_write(&fil, buf, size, &bw) != FR_OK) {
+                    f_close(&fil);
+                    return FR_DISK_ERR;
+                }
             }
-            return true;
-            f_close(&fil);
+            return f_close(&fil);
         }
 
-        void open(char *name) {
+        bool open(char *name, BYTE mode = FA_WRITE | FA_CREATE_ALWAYS) {
             if (!inserted)
-                return;
-            if (f_open(&fil, name, FA_WRITE | FA_CREATE_ALWAYS) == FR_OK) {
+                return false;
+            if (f_open(&fil, name, mode) == FR_OK) {
                 opened = true;
+                return true;
             };
+            return false;
         }
 
-        void write(char *buf) {
+        FRESULT write(char *buf, size_t size) {
             if (!inserted)
-                return;
-            f_puts(buf, &fil);
+                return FR_NOT_READY;
+            if(!opened) return FR_NO_FILE;
+            return f_write(&fil, buf, size, NULL);
         }
 
         FRESULT close() {
             if (!inserted)
-                return FR_DISK_ERR;
+                return FR_NOT_READY;
+            if(!opened) return FR_NO_FILE;
             return f_close(&fil);
         }
 };
@@ -305,15 +312,6 @@ int main(void) {
     LED Led2(Led2_RGB);
     SD_Card SD;
 
-    SD.checkInsertion();
-    if (SD.isInserted()) {
-        char name[] = "test.txt";
-        char buf[] = "Hello from SD Class";
-        if (SD.write_once(name, buf)) {
-            Led1.OK(Color::GREEN);
-        };
-    }
-
     bool once = false;
 
     /* USER CODE END 2 */
@@ -323,6 +321,16 @@ int main(void) {
     while (1) {
         /* USER CODE END WHILE */
 
+        SD.checkInsertion();
+        if (SD.isInserted()) {
+            char name[] = "test.txt";
+            char buf[] = "Hello from SD Class\n";
+            if (SD.write_once(name, buf, sizeof(buf) / sizeof(char)) == FR_OK) {
+                Led1.OK(Color::GREEN);
+            };
+        } else {
+            Led1.setColor(Color::RED);
+        }
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
