@@ -26,6 +26,9 @@
 #include "ff.h"
 #include "stm32f4xx_hal_gpio.h"
 #include <cstdint>
+#include "LED.h"
+#include "LED_RGB.h"
+#include "SD_Card.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +50,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan1;
+CAN_HandleTypeDef hcan2;
+
 SD_HandleTypeDef hsd;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -60,188 +66,14 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_CAN1_Init(void);
+static void MX_CAN2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-typedef struct LED_Color_Data {
-        GPIO_TypeDef *GPIO_Port;
-        uint16_t GPIO_Pin;
-} LED_Color_Data;
-
-typedef struct LED_RGB_Data {
-        LED_Color_Data r;
-        LED_Color_Data g;
-        LED_Color_Data b;
-} LED_RGB_Data;
-
-enum Color {
-    WHITE = 0b111,
-    BLUE = 0b001,
-    GREEN = 0b010,
-    RED = 0b100,
-    CYAN = 0b011,
-    MAGENTA = 0b101,
-    YELLOW = 0b110,
-    OFF = 0b000
-};
-
-class LED {
-    private:
-        LED_RGB_Data led;
-        Color ledRGB = Color::OFF;
-
-        void setPin(GPIO_TypeDef *port, uint16_t pin, bool state) {
-            if (state)
-                HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
-            else
-                HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
-        }
-
-    public:
-        LED(LED_RGB_Data &led) : led(led) {
-        }
-
-        void setColor(Color color) {
-            ledRGB = color;
-            setPin(led.r.GPIO_Port, led.r.GPIO_Pin, (color >> 2) & 1);
-            setPin(led.g.GPIO_Port, led.g.GPIO_Pin, (color >> 1) & 1);
-            setPin(led.b.GPIO_Port, led.b.GPIO_Pin, color & 1);
-        }
-
-        void Off() {
-            setColor(Color::OFF);
-        }
-
-        void OK() {
-            setColor(ledRGB);
-            wait(300);
-            Off();
-            wait(300);
-            setColor(ledRGB);
-            wait(300);
-            Off();
-            wait(300);
-            setColor(ledRGB);
-            wait(300);
-            Off();
-        }
-
-        void OK(Color color) {
-            setColor(color);
-            wait(300);
-            Off();
-            wait(300);
-            setColor(color);
-            wait(300);
-            Off();
-            wait(300);
-            setColor(color);
-            wait(300);
-            Off();
-        }
-};
-
-class SD_Card {
-    private:
-        bool inserted = false;
-        bool opened = false;
-        FATFS FatFS{};
-        FIL fil{};
-
-    public:
-        SD_Card() {
-            checkInsertion();
-        }
-
-        ~SD_Card() {
-            if (opened) {
-                close();
-            }
-            unmount();
-        }
-
-        bool isInserted() {
-            return inserted;
-        }
-
-        bool checkInsertion() {
-            bool inserted_new = (BSP_SD_IsDetected() == SD_PRESENT);
-            if (inserted_new) {
-                inserted = BIT();
-                if (inserted) {
-                    if (mount() != FR_OK) {
-                        inserted = false;
-                        return false;
-                    }
-                }
-                return inserted;
-            }
-            inserted = false;
-            return false;
-        }
-
-        bool BIT() {
-            if (BSP_SD_Init() == MSD_OK) {
-                if (disk_initialize(0) == RES_OK) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        FRESULT mount() {
-            if (!inserted)
-                return FR_NOT_READY;
-            return f_mount(&FatFS, "0:", 1);
-        }
-
-        FRESULT unmount() {
-            if (!inserted)
-                return  FR_NOT_READY;
-            return f_mount(NULL, "0:", 0);
-        }
-
-        FRESULT write_once(char *name, char *buf, size_t size, BYTE mode = FA_WRITE | FA_CREATE_ALWAYS) {
-            if (!inserted)
-                return FR_NOT_READY;
-            FIL fil;
-            if (f_open(&fil, name, mode) == FR_OK) {
-                UINT bw;
-                if(f_write(&fil, buf, size, &bw) != FR_OK) {
-                    f_close(&fil);
-                    return FR_DISK_ERR;
-                }
-            }
-            return f_close(&fil);
-        }
-
-        bool open(char *name, BYTE mode = FA_WRITE | FA_CREATE_ALWAYS) {
-            if (!inserted)
-                return false;
-            if (f_open(&fil, name, mode) == FR_OK) {
-                opened = true;
-                return true;
-            };
-            return false;
-        }
-
-        FRESULT write(char *buf, size_t size) {
-            if (!inserted)
-                return FR_NOT_READY;
-            if(!opened) return FR_NO_FILE;
-            return f_write(&fil, buf, size, NULL);
-        }
-
-        FRESULT close() {
-            if (!inserted)
-                return FR_NOT_READY;
-            if(!opened) return FR_NO_FILE;
-            return f_close(&fil);
-        }
-};
 
 /* USER CODE END 0 */
 
@@ -276,9 +108,11 @@ int main(void) {
     MX_SDIO_SD_Init();
     MX_USB_OTG_FS_PCD_Init();
     MX_FATFS_Init();
+    MX_CAN1_Init();
+    MX_CAN2_Init();
     /* USER CODE BEGIN 2 */
 
-    LED_RGB_Data Led1_RGB = {
+    LED_RGB_Data LED1_RGB_Data = {
         {
             .GPIO_Port = LED1_RED_GPIO_Port,
             .GPIO_Pin = LED1_RED_Pin,
@@ -293,7 +127,7 @@ int main(void) {
         },
     };
 
-    LED_RGB_Data Led2_RGB = {
+    LED_RGB_Data LED2_RGB_Data = {
         {
             .GPIO_Port = LED2_RED_GPIO_Port,
             .GPIO_Pin = LED2_RED_Pin,
@@ -308,8 +142,21 @@ int main(void) {
         },
     };
 
-    LED Led1(Led1_RGB);
-    LED Led2(Led2_RGB);
+    LED_Color_Data CAN1_LED_Data = {
+        .GPIO_Port = CAN1_LED_GPIO_Port,
+        .GPIO_Pin = CAN1_LED_Pin,
+    };
+
+    LED_Color_Data CAN2_LED_Data = {
+        .GPIO_Port = CAN2_LED_GPIO_Port,
+        .GPIO_Pin = CAN2_LED_Pin,
+    };
+
+
+    LED_RGB Led1(LED1_RGB_Data);
+    LED_RGB Led2(LED2_RGB_Data);
+    LED CAN1_LED(CAN1_LED_Data);
+    LED CAN2_LED(CAN2_LED_Data);
     SD_Card SD;
 
     bool once = false;
@@ -320,17 +167,7 @@ int main(void) {
     /* USER CODE BEGIN WHILE */
     while (1) {
         /* USER CODE END WHILE */
-
-        SD.checkInsertion();
-        if (SD.isInserted()) {
-            char name[] = "test.txt";
-            char buf[] = "Hello from SD Class\n";
-            if (SD.write_once(name, buf, sizeof(buf) / sizeof(char)) == FR_OK) {
-                Led1.OK(Color::GREEN);
-            };
-        } else {
-            Led1.setColor(Color::RED);
-        }
+        CAN1_LED.On();
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
@@ -378,6 +215,74 @@ void SystemClock_Config(void) {
 }
 
 /**
+ * @brief CAN1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_CAN1_Init(void) {
+
+    /* USER CODE BEGIN CAN1_Init 0 */
+
+    /* USER CODE END CAN1_Init 0 */
+
+    /* USER CODE BEGIN CAN1_Init 1 */
+
+    /* USER CODE END CAN1_Init 1 */
+    hcan1.Instance = CAN1;
+    hcan1.Init.Prescaler = 16;
+    hcan1.Init.Mode = CAN_MODE_NORMAL;
+    hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+    hcan1.Init.TimeSeg1 = CAN_BS1_1TQ;
+    hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
+    hcan1.Init.TimeTriggeredMode = DISABLE;
+    hcan1.Init.AutoBusOff = DISABLE;
+    hcan1.Init.AutoWakeUp = DISABLE;
+    hcan1.Init.AutoRetransmission = DISABLE;
+    hcan1.Init.ReceiveFifoLocked = DISABLE;
+    hcan1.Init.TransmitFifoPriority = DISABLE;
+    if (HAL_CAN_Init(&hcan1) != HAL_OK) {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN CAN1_Init 2 */
+
+    /* USER CODE END CAN1_Init 2 */
+}
+
+/**
+ * @brief CAN2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_CAN2_Init(void) {
+
+    /* USER CODE BEGIN CAN2_Init 0 */
+
+    /* USER CODE END CAN2_Init 0 */
+
+    /* USER CODE BEGIN CAN2_Init 1 */
+
+    /* USER CODE END CAN2_Init 1 */
+    hcan2.Instance = CAN2;
+    hcan2.Init.Prescaler = 16;
+    hcan2.Init.Mode = CAN_MODE_NORMAL;
+    hcan2.Init.SyncJumpWidth = CAN_SJW_1TQ;
+    hcan2.Init.TimeSeg1 = CAN_BS1_1TQ;
+    hcan2.Init.TimeSeg2 = CAN_BS2_1TQ;
+    hcan2.Init.TimeTriggeredMode = DISABLE;
+    hcan2.Init.AutoBusOff = DISABLE;
+    hcan2.Init.AutoWakeUp = DISABLE;
+    hcan2.Init.AutoRetransmission = DISABLE;
+    hcan2.Init.ReceiveFifoLocked = DISABLE;
+    hcan2.Init.TransmitFifoPriority = DISABLE;
+    if (HAL_CAN_Init(&hcan2) != HAL_OK) {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN CAN2_Init 2 */
+
+    /* USER CODE END CAN2_Init 2 */
+}
+
+/**
  * @brief SDIO Initialization Function
  * @param None
  * @retval None
@@ -395,11 +300,14 @@ static void MX_SDIO_SD_Init(void) {
     hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
     hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
     hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
+    hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
+    hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+    hsd.Init.ClockDiv = 0;
+    /* USER CODE BEGIN SDIO_Init 2 */
     hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
     hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     hsd.Init.ClockDiv = 6;
     hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
-    /* USER CODE BEGIN SDIO_Init 2 */
 
     /* USER CODE END SDIO_Init 2 */
 }
@@ -455,10 +363,13 @@ static void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB, LED2_RED_Pin | LED1_RED_Pin | LED1_GREEN_Pin | LED2_GREEN_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOB, LED2_RED_Pin | LED1_RED_Pin | LED1_GREEN_Pin | LED2_GREEN_Pin | CAN1_LED_Pin, GPIO_PIN_SET);
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOC, LED1_BLUE_Pin | LED2_BLUE_Pin, GPIO_PIN_SET);
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(CAN2_LED_GPIO_Port, CAN2_LED_Pin, GPIO_PIN_SET);
 
     /*Configure GPIO pin : SD_PRESENCE_Pin */
     GPIO_InitStruct.Pin = SD_PRESENCE_Pin;
@@ -466,8 +377,9 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(SD_PRESENCE_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : LED2_RED_Pin LED1_RED_Pin LED1_GREEN_Pin LED2_GREEN_Pin */
-    GPIO_InitStruct.Pin = LED2_RED_Pin | LED1_RED_Pin | LED1_GREEN_Pin | LED2_GREEN_Pin;
+    /*Configure GPIO pins : LED2_RED_Pin LED1_RED_Pin LED1_GREEN_Pin LED2_GREEN_Pin
+                             CAN1_LED_Pin */
+    GPIO_InitStruct.Pin = LED2_RED_Pin | LED1_RED_Pin | LED1_GREEN_Pin | LED2_GREEN_Pin | CAN1_LED_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -479,6 +391,13 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : CAN2_LED_Pin */
+    GPIO_InitStruct.Pin = CAN2_LED_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(CAN2_LED_GPIO_Port, &GPIO_InitStruct);
 
     /* USER CODE BEGIN MX_GPIO_Init_2 */
 

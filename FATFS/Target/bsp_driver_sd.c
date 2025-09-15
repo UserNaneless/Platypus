@@ -20,9 +20,9 @@
   *
  ******************************************************************************
  */
+#include "main.h"
 /* USER CODE END Header */
 
-#include "main.h"
 #ifdef OLD_API
 /* kept to avoid issue when migrating old projects. */
 /* USER CODE BEGIN 0 */
