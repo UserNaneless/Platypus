@@ -26,9 +26,6 @@
 #include "ff.h"
 #include "stm32f4xx_hal_gpio.h"
 #include <cstdint>
-#include "LED.h"
-#include "LED_RGB.h"
-#include "SD_Card.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -74,6 +71,231 @@ static void MX_CAN2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+typedef struct LED_Color_Data {
+        GPIO_TypeDef *GPIO_Port;
+        uint16_t GPIO_Pin;
+} LED_Color_Data;
+
+typedef struct LED_RGB_Data {
+        LED_Color_Data r;
+        LED_Color_Data g;
+        LED_Color_Data b;
+} LED_RGB_Data;
+
+enum Color {
+    WHITE = 0b111,
+    BLUE = 0b001,
+    GREEN = 0b010,
+    RED = 0b100,
+    CYAN = 0b011,
+    MAGENTA = 0b101,
+    YELLOW = 0b110,
+    OFF = 0b000
+};
+
+class LED_Base {
+    protected:
+        Color state = Color::OFF;
+
+        void setPin(GPIO_TypeDef *port, uint16_t pin, bool state) {
+            if (state)
+                HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
+            else
+                HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
+        }
+
+    public:
+        virtual void setColor(Color color) {
+            state = color;
+        };
+
+        virtual ~LED_Base() = default;
+
+        virtual void Off() {
+            setColor(Color::OFF);
+        };
+
+        virtual void OK() {
+            setColor(state);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(state);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(state);
+            wait(300);
+            Off();
+        }
+};
+
+class LED_RGB : LED_Base {
+    private:
+        LED_RGB_Data led;
+
+    public:
+        LED_RGB(LED_RGB_Data &led) : led(led) {}
+
+        void setColor(Color color) {
+            state = color;
+            setPin(led.r.GPIO_Port, led.r.GPIO_Pin, (color >> 2) & 1);
+            setPin(led.g.GPIO_Port, led.g.GPIO_Pin, (color >> 1) & 1);
+            setPin(led.b.GPIO_Port, led.b.GPIO_Pin, color & 1);
+        }
+
+        void Off() {
+            setColor(Color::OFF);
+        }
+
+        void OK() {
+            setColor(state);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(state);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(state);
+            wait(300);
+            Off();
+        }
+
+        void OK(Color color) {
+            setColor(color);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(color);
+            wait(300);
+            Off();
+            wait(300);
+            setColor(color);
+            wait(300);
+            Off();
+        }
+};
+
+class LED : LED_Base {
+    private:
+        LED_Color_Data led;
+
+    public:
+        LED(LED_Color_Data &led) : led(led) {}
+         
+        void setColor(Color color) {
+            state = color;
+            setPin(led.GPIO_Port, led.GPIO_Pin, color);
+        }
+
+        void On() {
+            setColor(Color::WHITE);
+        }
+
+
+};
+
+class SD_Card {
+    private:
+        bool inserted = false;
+        bool opened = false;
+        FATFS FatFS{};
+        FIL fil{};
+
+    public:
+        SD_Card() {
+            checkInsertion();
+        }
+
+        ~SD_Card() {
+            if (opened) {
+                close();
+            }
+            unmount();
+        }
+
+        bool isInserted() {
+            return inserted;
+        }
+
+        bool checkInsertion() {
+            bool inserted_new = (BSP_SD_IsDetected() == SD_PRESENT);
+            if (inserted_new) {
+                inserted = BIT();
+                if (inserted) {
+                    if (mount() != FR_OK) {
+                        inserted = false;
+                        return false;
+                    }
+                }
+                return inserted;
+            }
+            inserted = false;
+            return false;
+        }
+
+        bool BIT() {
+            if (BSP_SD_Init() == MSD_OK) {
+                if (disk_initialize(0) == RES_OK) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        FRESULT mount() {
+            if (!inserted)
+                return FR_NOT_READY;
+            return f_mount(&FatFS, "0:", 1);
+        }
+
+        FRESULT unmount() {
+            if (!inserted)
+                return FR_NOT_READY;
+            return f_mount(NULL, "0:", 0);
+        }
+
+        FRESULT write_once(char *name, char *buf, size_t size, BYTE mode = FA_WRITE | FA_CREATE_ALWAYS) {
+            if (!inserted)
+                return FR_NOT_READY;
+            FIL fil;
+            if (f_open(&fil, name, mode) == FR_OK) {
+                UINT bw;
+                if (f_write(&fil, buf, size, &bw) != FR_OK) {
+                    f_close(&fil);
+                    return FR_DISK_ERR;
+                }
+            }
+            return f_close(&fil);
+        }
+
+        bool open(char *name, BYTE mode = FA_WRITE | FA_CREATE_ALWAYS) {
+            if (!inserted)
+                return false;
+            if (f_open(&fil, name, mode) == FR_OK) {
+                opened = true;
+                return true;
+            };
+            return false;
+        }
+
+        FRESULT write(char *buf, size_t size) {
+            if (!inserted)
+                return FR_NOT_READY;
+            if (!opened)
+                return FR_NO_FILE;
+            return f_write(&fil, buf, size, NULL);
+        }
+
+        FRESULT close() {
+            if (!inserted)
+                return FR_NOT_READY;
+            if (!opened)
+                return FR_NO_FILE;
+            return f_close(&fil);
+        }
+};
 
 /* USER CODE END 0 */
 
