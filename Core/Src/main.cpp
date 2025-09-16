@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "fatfs.h"
 #include "ff.h"
+#include "stm32f4xx_hal_can.h"
 #include "stm32f4xx_hal_gpio.h"
 #include <cstdint>
 /* USER CODE END Includes */
@@ -183,7 +184,7 @@ class LED : LED_Base {
 
     public:
         LED(LED_Color_Data &led) : led(led) {}
-         
+
         void setColor(Color color) {
             state = color;
             setPin(led.GPIO_Port, led.GPIO_Pin, color);
@@ -192,8 +193,6 @@ class LED : LED_Base {
         void On() {
             setColor(Color::WHITE);
         }
-
-
 };
 
 class SD_Card {
@@ -296,8 +295,34 @@ class SD_Card {
             return f_close(&fil);
         }
 };
+uint32_t txMailbox;
 
-/* USER CODE END 0 */
+void CAN1_SendTest(void) {
+    CAN_TxHeaderTypeDef txHeader;
+    uint8_t txData[8] = { 0x11, 0x22, 0x33, 0x44 };
+
+    txHeader.StdId = 0x123;      // Standard ID
+    txHeader.IDE = CAN_ID_STD;   // Use standard ID
+    txHeader.RTR = CAN_RTR_DATA; // Data frame
+    txHeader.DLC = 4;            // 4 data bytes
+
+    HAL_CAN_AddTxMessage(&hcan1, &txHeader, txData, &txMailbox);
+}
+
+bool CAN1_ReceivePolling(void) {
+    CAN_RxHeaderTypeDef rxHeader;
+    uint8_t rxData[8];
+
+    // if (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0)
+    // {
+    if (HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rxHeader, rxData) == HAL_OK) {
+        // rxHeader.StdId -> should be 0x123
+        // rxData[0..3]   -> should be {0x11,0x22,0x33,0x44}
+        return true;
+    }
+    // }
+    return false;
+}
 
 /**
  * @brief  The application entry point.
@@ -332,6 +357,9 @@ int main(void) {
     MX_FATFS_Init();
     MX_CAN1_Init();
     MX_CAN2_Init();
+
+    HAL_CAN_Start(&hcan1);
+    HAL_CAN_Start(&hcan2);
     /* USER CODE BEGIN 2 */
 
     LED_RGB_Data LED1_RGB_Data = {
@@ -374,22 +402,32 @@ int main(void) {
         .GPIO_Pin = CAN2_LED_Pin,
     };
 
-
     LED_RGB Led1(LED1_RGB_Data);
     LED_RGB Led2(LED2_RGB_Data);
     LED CAN1_LED(CAN1_LED_Data);
     LED CAN2_LED(CAN2_LED_Data);
     SD_Card SD;
 
-    bool once = false;
-
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+        CAN1_SendTest();
+        wait(100);
+        if (HAL_CAN_IsTxMessagePending(&hcan1, txMailbox)) {
+            Led2.setColor(Color::YELLOW);
+            wait(1000);
+        } else {
+            Led2.setColor(Color::OFF);
+        }
+        if (CAN1_ReceivePolling()) {
+            Led1.setColor(Color::GREEN);
+            wait(10000);
+        } else {
+            Led1.setColor(Color::RED);
+        }
         /* USER CODE END WHILE */
-        CAN1_LED.On();
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
@@ -462,10 +500,24 @@ static void MX_CAN1_Init(void) {
     hcan1.Init.AutoRetransmission = DISABLE;
     hcan1.Init.ReceiveFifoLocked = DISABLE;
     hcan1.Init.TransmitFifoPriority = DISABLE;
+
+    hcan1.Init.Mode = CAN_MODE_LOOPBACK;
     if (HAL_CAN_Init(&hcan1) != HAL_OK) {
         Error_Handler();
     }
     /* USER CODE BEGIN CAN1_Init 2 */
+    CAN_FilterTypeDef filterConfig;
+    filterConfig.FilterBank = 0;
+    filterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+    filterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+    filterConfig.FilterIdHigh = 0x0000;
+    filterConfig.FilterIdLow = 0x0000;
+    filterConfig.FilterMaskIdHigh = 0x0000;
+    filterConfig.FilterMaskIdLow = 0x0000;
+    filterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+    filterConfig.FilterActivation = ENABLE;
+
+    HAL_CAN_ConfigFilter(&hcan1, &filterConfig);
 
     /* USER CODE END CAN1_Init 2 */
 }
@@ -500,6 +552,19 @@ static void MX_CAN2_Init(void) {
         Error_Handler();
     }
     /* USER CODE BEGIN CAN2_Init 2 */
+    CAN_FilterTypeDef filterConfig = { 0 };
+    filterConfig.FilterBank = 14;
+    filterConfig.SlaveStartFilterBank = 14;
+    filterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+    filterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+    filterConfig.FilterIdHigh = 0x0000;
+    filterConfig.FilterIdLow = 0x0000;
+    filterConfig.FilterMaskIdHigh = 0x0000;
+    filterConfig.FilterMaskIdLow = 0x0000;
+    filterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+    filterConfig.FilterActivation = ENABLE;
+
+    HAL_CAN_ConfigFilter(&hcan2, &filterConfig);
 
     /* USER CODE END CAN2_Init 2 */
 }
