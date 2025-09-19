@@ -193,6 +193,11 @@ class LED : LED_Base {
         void On() {
             setColor(Color::WHITE);
         }
+
+        void Off() {
+            setColor(Color::OFF);
+        }
+
 };
 
 class SD_Card {
@@ -297,7 +302,7 @@ class SD_Card {
 };
 uint32_t txMailbox;
 
-void CAN1_SendTest(void) {
+bool CAN1_SendTest(void) {
     CAN_TxHeaderTypeDef txHeader;
     uint8_t txData[8] = { 0x11, 0x22, 0x33, 0x44 };
 
@@ -306,7 +311,11 @@ void CAN1_SendTest(void) {
     txHeader.RTR = CAN_RTR_DATA; // Data frame
     txHeader.DLC = 4;            // 4 data bytes
 
-    HAL_CAN_AddTxMessage(&hcan1, &txHeader, txData, &txMailbox);
+    if(HAL_CAN_AddTxMessage(&hcan1, &txHeader, txData, &txMailbox) != HAL_OK) {
+        return false;
+    }
+
+    return true;
 }
 
 bool CAN1_ReceivePolling(void) {
@@ -408,25 +417,39 @@ int main(void) {
     LED CAN2_LED(CAN2_LED_Data);
     SD_Card SD;
 
+    bool once = false;
+    int res = 0; //36 
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-        CAN1_SendTest();
-        wait(100);
-        if (HAL_CAN_IsTxMessagePending(&hcan1, txMailbox)) {
-            Led2.setColor(Color::YELLOW);
-            wait(1000);
+        wait(500);
+        if(CAN1_SendTest()) {
+            CAN1_LED.On();
+            res += 1;
         } else {
-            Led2.setColor(Color::OFF);
+            once = true;
+            CAN1_LED.setColor(Color::OFF);
         }
-        if (CAN1_ReceivePolling()) {
-            Led1.setColor(Color::GREEN);
-            wait(10000);
-        } else {
+        if(!once) {
             Led1.setColor(Color::RED);
+        } else {
+            Led1.setColor(Color::GREEN);
         }
+        // if (HAL_CAN_IsTxMessagePending(&hcan1, txMailbox)) {
+        //     Led2.setColor(Color::YELLOW);
+        //     wait(1000);
+        // } else {
+        //     Led2.setColor(Color::OFF);
+        // }
+        // if (CAN1_ReceivePolling()) {
+        //     Led1.setColor(Color::GREEN);
+        //     wait(10000);
+        // } else {
+            // Led1.setColor(Color::RED);
+        // }
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }
@@ -501,7 +524,7 @@ static void MX_CAN1_Init(void) {
     hcan1.Init.ReceiveFifoLocked = DISABLE;
     hcan1.Init.TransmitFifoPriority = DISABLE;
 
-    hcan1.Init.Mode = CAN_MODE_LOOPBACK;
+    // hcan1.Init.Mode = CAN_MODE_LOOPBACK;
     if (HAL_CAN_Init(&hcan1) != HAL_OK) {
         Error_Handler();
     }
